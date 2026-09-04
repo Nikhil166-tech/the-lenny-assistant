@@ -112,14 +112,14 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
   ];
 
   return (
-    <div className="flex flex-col h-full bg-white text-gray-900 relative">
+    <div className="flex flex-col h-full bg-white text-slate-800 relative">
       {/* Top Navbar */}
-      <header className="h-14 border-b border-gray-200 px-4 flex items-center justify-between bg-white/95 backdrop-blur-md sticky top-0 z-20 shadow-xs">
+      <header className="h-14 border-b border-gray-200 px-4 flex items-center justify-between bg-white/90 backdrop-blur-md sticky top-0 z-20 shadow-2xs">
         <div className="flex items-center gap-3">
           {onToggleSidebar && (
             <button
               onClick={onToggleSidebar}
-              className="p-2 rounded-xl text-gray-700 hover:text-black hover:bg-gray-100 transition-colors border border-gray-200 shadow-2xs"
+              className="p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-gray-100 transition-colors"
               title="Toggle sidebar"
             >
               <PanelLeft className="w-4 h-4" />
@@ -127,7 +127,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
           )}
           <button
             onClick={onNewChat}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-black hover:bg-gray-800 text-white shadow-sm transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 hover:bg-slate-800 text-white shadow-2xs transition-all"
             title="Start new chat session"
           >
             <Plus className="w-3.5 h-3.5 text-emerald-400" />
@@ -135,7 +135,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
           </button>
         </div>
 
-        {/* Center/Right: High-Contrast Model Selector */}
+        {/* Center/Right: Balanced Model Selector */}
         <div className="flex items-center gap-2">
           <ModelSelector
             currentProvider={provider}
@@ -148,21 +148,21 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
       {/* Messages Scroll Area */}
       <div className="flex-grow overflow-y-auto pb-44 pt-4">
         {messages.length === 0 ? (
-          /* High-Contrast Hero Empty State */
+          /* Balanced Hero Empty State */
           <div className="max-w-2xl mx-auto px-4 pt-10 sm:pt-16 text-center">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-black text-white shadow-xl ring-4 ring-emerald-500/20 mb-6">
-              <Sparkles className="w-7 h-7 text-emerald-400" />
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-sm ring-2 ring-emerald-500/20 mb-5">
+              <Sparkles className="w-6 h-6" />
             </div>
 
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-950 mb-3">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 mb-2.5">
               What growth strategy are you exploring?
             </h1>
-            <p className="text-sm sm:text-base text-gray-600 max-w-lg mx-auto mb-10 leading-relaxed font-medium">
+            <p className="text-sm sm:text-base text-slate-500 max-w-lg mx-auto mb-9 leading-relaxed font-normal">
               Grounded in 200+ hours of Lenny's Podcast archives with Elena Verna, Shreyas Doshi, Brian Chesky, and Casey Winters.
             </p>
 
-            {/* 2x2 Starter Cards Grid with Strong Borders & Contrast */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-left">
+            {/* 2x2 Starter Cards Grid with Soft Borders & Comfortable Typography */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
               {starterCards.map((card, idx) => {
                 const IconComponent = card.icon;
                 return (
@@ -172,17 +172,17 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
                       if (card.mode === 'ship30') setIsShip30(true);
                       onSendMessage(card.prompt, card.mode);
                     }}
-                    className="p-4 rounded-2xl bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-black transition-all duration-200 group flex flex-col justify-between shadow-sm hover:shadow-md"
+                    className="p-4 rounded-2xl bg-white hover:bg-gray-50/80 border border-gray-200 hover:border-emerald-500/40 transition-all duration-200 group flex flex-col justify-between shadow-2xs hover:shadow-xs"
                   >
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 rounded-xl bg-black text-emerald-400 group-hover:scale-105 transition-transform shadow-xs">
+                    <div className="flex items-center gap-2.5 mb-2">
+                      <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600 group-hover:scale-105 transition-transform">
                         <IconComponent className="w-4 h-4" />
                       </div>
-                      <span className="font-bold text-sm text-gray-900 group-hover:text-black">
+                      <span className="font-semibold text-sm text-slate-800 group-hover:text-slate-900">
                         {card.title}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-600 font-medium line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-slate-500 font-normal line-clamp-2 leading-relaxed">
                       {card.desc}
                     </p>
                   </button>
@@ -203,9 +203,9 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
 
             {/* Live Streaming Status Pill */}
             {isStreaming && (
-              <div className="py-4 px-6 flex items-center gap-3 text-xs text-emerald-800 font-bold">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-ping" />
-                <span className="font-mono">{currentStatus || "Searching podcast transcripts..."}</span>
+              <div className="py-4 px-6 flex items-center gap-3 text-xs text-emerald-700 font-medium">
+                <div className="w-2 h-2 rounded-full bg-emerald-600 animate-ping" />
+                <span className="font-mono">{currentStatus || "Searching transcript archives..."}</span>
               </div>
             )}
             <div ref={messagesEndRef} />
@@ -213,12 +213,12 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
         )}
       </div>
 
-      {/* Floating High-Contrast Composer */}
+      {/* Floating Modern Composer */}
       <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-white via-white/95 to-transparent pt-6 pb-4 px-4">
         <div className="max-w-3xl mx-auto">
           <form
             onSubmit={handleSubmit}
-            className="relative rounded-3xl bg-white border-2 border-gray-300 hover:border-gray-400 focus-within:border-black focus-within:ring-4 focus-within:ring-black/5 shadow-2xl transition-all"
+            className="relative rounded-3xl bg-white border border-gray-300 hover:border-gray-400 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20 shadow-lg transition-all"
           >
             {/* Input Textarea */}
             <textarea
@@ -228,7 +228,7 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
               onKeyDown={handleKeyDown}
               rows={1}
               placeholder="Ask a product, growth, or strategy question from Lenny's transcripts..."
-              className="w-full bg-transparent text-gray-900 placeholder-gray-500 font-medium text-sm sm:text-base px-5 pt-4 pb-14 focus:outline-none resize-none max-h-48 overflow-y-auto"
+              className="w-full bg-transparent text-slate-800 placeholder-slate-400 font-normal text-sm sm:text-base px-5 pt-4 pb-14 focus:outline-none resize-none max-h-48 overflow-y-auto"
             />
 
             {/* Bottom Toolbar inside the Composer */}
@@ -237,16 +237,16 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
               <button
                 type="button"
                 onClick={() => setIsShip30(!isShip30)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                   isShip30
-                    ? 'bg-emerald-600 text-white shadow-md ring-2 ring-emerald-400'
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-900 border-2 border-gray-300 shadow-2xs'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'bg-gray-100 hover:bg-gray-200 text-slate-600 border border-gray-200'
                 }`}
                 title="Ship 30 for 30 Mode: Generates high-retention ~1,250-word essays with bold anchor words"
               >
                 <PenTool className="w-3.5 h-3.5" />
                 <span>Ship 30 Mode</span>
-                <span className={`text-[10px] font-mono uppercase px-1.5 py-0.5 rounded-full ${isShip30 ? 'bg-emerald-700 text-white' : 'bg-gray-300 text-gray-800'}`}>
+                <span className={`text-[10px] font-mono uppercase px-1.5 py-0.2 rounded-full ${isShip30 ? 'bg-emerald-700 text-white' : 'bg-gray-200 text-slate-600'}`}>
                   {isShip30 ? 'ON' : 'OFF'}
                 </span>
               </button>
@@ -255,26 +255,26 @@ export const ChatPane: React.FC<ChatPaneProps> = ({
               <button
                 type="submit"
                 disabled={!input.trim() && !isStreaming}
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
                   isStreaming
-                    ? 'bg-amber-600 text-white animate-pulse shadow-md'
+                    ? 'bg-amber-600 text-white animate-pulse shadow-xs'
                     : input.trim()
-                    ? 'bg-black text-white hover:bg-gray-800 shadow-lg scale-100'
-                    : 'bg-gray-200 text-gray-400 cursor-not-allowed border border-gray-300'
+                    ? 'bg-slate-900 text-white hover:bg-black shadow-xs scale-100'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
                 }`}
                 title={isStreaming ? "Streaming response..." : "Send message"}
               >
                 {isStreaming ? (
-                  <Square className="w-3.5 h-3.5 fill-current" />
+                  <Square className="w-3 h-3 fill-current" />
                 ) : (
-                  <ArrowUp className="w-5 h-5 stroke-[2.5]" />
+                  <ArrowUp className="w-4 h-4 stroke-[2]" />
                 )}
               </button>
             </div>
           </form>
 
           {/* Micro Disclaimer */}
-          <p className="text-center text-[11px] text-gray-500 font-medium mt-2">
+          <p className="text-center text-[11px] text-slate-400 font-normal mt-2">
             The Lenny Growth Assistant is strictly grounded in actual podcast transcripts. Includes verified citations.
           </p>
         </div>
