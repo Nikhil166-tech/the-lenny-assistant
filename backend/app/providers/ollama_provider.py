@@ -1,3 +1,5 @@
+import asyncio
+import re
 import httpx
 import json
 import logging
@@ -77,11 +79,78 @@ class OllamaProvider(BaseLLMProvider):
 
         except (httpx.ConnectError, httpx.TimeoutException) as conn_err:
             logger.warning(f"Ollama connection issue: {conn_err}")
-            yield (
-                f"\n\n> ⚠️ **Local Ollama Notice:** Cannot reach Ollama at `{self.base_url}`.\n"
-                f"> To run the local model demo, please ensure Ollama is started (`ollama serve`) "
-                f"and `{self.model}` is downloaded (`ollama pull {self.model}`).\n\n"
+            notice = (
+                f"> ⚠️ **Local Ollama Notice:** Cannot reach Ollama at `{self.base_url}`.\n"
+                f"> *Running in Offline Fallback Mode. To enable local neural model streaming, start Ollama (`ollama serve`) "
+                f"and run `ollama pull {self.model}`. You can also select **Claude 3.5** or **OpenAI** in the top model dropdown.*\n\n"
+                f"---\n\n"
             )
-            # Yield helpful synthesis using retrieved transcript context directly
-            context_summary = "\n".join([m.get("content", "") for m in messages if m.get("role") == "user"])
-            yield f"*(Simulated fallback for offline local testing based on retrieved transcript wisdom for: '{context_summary}')*"
+            for chunk in self._chunk_tokens(notice):
+                yield chunk
+                await asyncio.sleep(0.01)
+
+            # Generate structured synthesis from retrieved context in prompt
+            raw_prompt = "\n".join([m.get("content", "") for m in messages if m.get("role") == "user"])
+            synthesis = self._synthesize_offline_context(raw_prompt)
+            for chunk in self._chunk_tokens(synthesis):
+                yield chunk
+                await asyncio.sleep(0.015)
+
+    def _chunk_tokens(self, text: str, chunk_size: int = 4) -> List[str]:
+        words = text.split(" ")
+        chunks = []
+        for i in range(0, len(words), chunk_size):
+            chunks.append(" ".join(words[i:i + chunk_size]) + " ")
+        return chunks
+
+    def _synthesize_offline_context(self, prompt: str) -> str:
+        question_match = re.search(r"User Question:\s*(.*)", prompt, re.DOTALL)
+        question = question_match.group(1).strip() if question_match else "your question"
+
+        pattern = r"---\s*Episode:\s*(.*?)\s*---\n([\s\S]*?)(?=(?:---\s*Episode:|$|User Question:))"
+        matches = re.findall(pattern, prompt)
+
+        if not matches:
+            return (
+                f"### Grounded Response\n\n"
+                f"Based on Lenny's Podcast archives, we were unable to retrieve sufficient detail regarding: **{question}**."
+            )
+
+        out = [
+            f"### Grounded Synthesis from Lenny's Podcast Transcripts\n\n",
+            f"Here is the wisdom directly from Lenny's podcast archives addressing **{question}**:\n\n"
+        ]
+
+        for ep_header, text in matches:
+            meta_match = re.search(r"^(.*?)\s*\((?:Guest:\s*(.*?)\s*-\s*(.*?))\)\s*\[(.*?)\]", ep_header)
+            if meta_match:
+                ep_title = meta_match.group(1).strip()
+                guest = meta_match.group(2).strip()
+                topic = meta_match.group(3).strip()
+                timestamp = meta_match.group(4).strip()
+            else:
+                ep_title = ep_header.strip()
+                guest = "Guest Expert"
+                topic = "Strategy"
+                timestamp = "00:00:00"
+
+            out.append(f"#### 🎙️ **{guest}** — *{topic}*\n")
+            out.append(f"> **Citation:** *[{ep_title} ({timestamp})]*\n\n")
+
+            lines = [l.strip() for l in text.strip().split("\n") if l.strip()]
+            for line in lines:
+                if line.startswith("Lenny:"):
+                    out.append(f"\n**{line}**\n\n")
+                elif ":" in line and not line.startswith("http"):
+                    speaker, rest = line.split(":", 1)
+                    out.append(f"**{speaker.strip()}:**\n{rest.strip()}\n\n")
+                else:
+                    out.append(f"{line}\n\n")
+
+            out.append("---\n\n")
+
+        out.append(
+            "\n💡 *Tip: Great product managers allocate their highest-leverage cognitive energy toward "
+            "the top 10% of high-impact strategic decisions, while ruthlessly containing overhead.*"
+        )
+        return "".join(out)

@@ -117,7 +117,8 @@ async def run_ingestion():
             logger.info(f"Processing '{file_path.name}' -> {len(chunks)} chunks (Guest: {guest})")
 
             for c in chunks:
-                emb = compute_text_embedding(c["text"])
+                indexing_text = f"{c['episode']} {c['guest']} {c['topic']}\n{c['text']}"
+                emb = compute_text_embedding(indexing_text)
                 db_chunk = TranscriptChunk(
                     episode_title=c["episode"],
                     guest_name=c["guest"],
