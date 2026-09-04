@@ -11,7 +11,7 @@ settings = get_settings()
 
 class OpenAIProvider(BaseLLMProvider):
     def __init__(self, api_key: str = None, model: str = None):
-        self.api_key = api_key or settings.OPENAI_API_KEY
+        self.api_key = api_key if api_key is not None else settings.OPENAI_API_KEY
         self.model = model or settings.OPENAI_MODEL
 
     async def check_health(self) -> Dict[str, Any]:
@@ -104,7 +104,7 @@ class OpenAIProvider(BaseLLMProvider):
 
 class ClaudeProvider(BaseLLMProvider):
     def __init__(self, api_key: str = None, model: str = None):
-        self.api_key = api_key or settings.ANTHROPIC_API_KEY
+        self.api_key = api_key if api_key is not None else settings.ANTHROPIC_API_KEY
         self.model = model or settings.ANTHROPIC_MODEL
 
     async def check_health(self) -> Dict[str, Any]:
