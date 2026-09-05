@@ -119,16 +119,34 @@ async def stream_chat(
             ]
             yield f'data: {json.dumps({"type": "sources", "sources": sources_payload})}\n\n'
 
-            # Build system and user prompt
+            # Fast-path: If user asks for calculator / ROI simulator, emit the interactive artifact immediately!
+            is_calculator_query = any(k in req.message.lower() for k in ["calculator", "roi", "slider", "cac", "ltv", "interactive plg", "roi simulator"])
+            initial_artifact = None
+            if is_calculator_query:
+                initial_artifact = build_calculator_artifact("PLG vs SLG ROI Calculator")
+                yield f'data: {json.dumps({"type": "artifact", "artifact": initial_artifact})}\n\n'
+                artifact_record = ArtifactRecord(
+                    artifact_type=initial_artifact["artifact_type"],
+                    title=initial_artifact["title"],
+                    content=initial_artifact["content"]
+                )
+                db.add(artifact_record)
+
+            # Build system and user prompt with compact high-signal chunks
             if is_ship30:
                 system_prompt = SHIP_30_SYSTEM_PROMPT
                 user_prompt = build_ship30_prompt(req.message, retrieved_chunks)
             else:
                 formatted_context = "\n\n".join([
-                    f"--- Episode: {c['episode']} (Guest: {c['guest']} - {c['topic']}) [{c['timestamp']}] ---\n{c['text']}"
+                    f"--- Episode: {c['episode']} (Guest: {c['guest']} - {c['topic']}) [{c['timestamp']}] ---\n{c['text'][:650]}"
                     for c in retrieved_chunks
                 ])
                 system_prompt = GROUNDED_SYSTEM_PROMPT
+                if is_calculator_query:
+                    system_prompt += (
+                        "\n\nNote: The interactive calculator is already active in the Artifact Canvas. "
+                        "Keep your response concise: 2-3 direct bullet points explaining CAC, LTV, and Churn rules."
+                    )
                 user_prompt = f"Context from Lenny's Transcripts:\n{formatted_context}\n\nUser Question:\n{req.message}"
 
             yield f'data: {json.dumps({"type": "status", "content": "Synthesizing grounded advice..."})}\n\n'
@@ -141,17 +159,10 @@ async def stream_chat(
                 accumulated_text += token
                 yield f'data: {json.dumps({"type": "token", "content": token})}\n\n'
 
-            # Extract any generated artifact
+            # Extract any generated artifact from LLM if not already emitted
             cleaned_text, artifact_data = extract_artifact(accumulated_text)
 
-            is_calculator_query = any(k in req.message.lower() for k in ["calculator", "roi", "slider", "cac", "ltv", "interactive plg", "roi simulator"])
-            if not artifact_data and is_calculator_query:
-                artifact_data = build_calculator_artifact("PLG vs SLG ROI Calculator")
-                artifact_notice = "\n\n*(Created Artifact: **PLG vs SLG ROI Calculator** — viewable in the Artifact Canvas)*\n"
-                yield f'data: {json.dumps({"type": "token", "content": artifact_notice})}\n\n'
-                accumulated_text += artifact_notice
-
-            if artifact_data:
+            if not initial_artifact and artifact_data:
                 yield f'data: {json.dumps({"type": "artifact", "artifact": artifact_data})}\n\n'
                 artifact_record = ArtifactRecord(
                     artifact_type=artifact_data["artifact_type"],

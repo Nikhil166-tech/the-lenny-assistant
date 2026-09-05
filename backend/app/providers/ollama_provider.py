@@ -53,13 +53,16 @@ class OllamaProvider(BaseLLMProvider):
             "messages": formatted_messages,
             "stream": True,
             "options": {
-                "temperature": temperature,
-                "top_p": 0.9
+                "temperature": 0.2,
+                "top_p": 0.9,
+                "num_ctx": 2048,
+                "num_predict": 450
             }
         }
 
         try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
+            timeout_cfg = httpx.Timeout(connect=10.0, read=self.timeout, write=10.0, pool=10.0)
+            async with httpx.AsyncClient(timeout=timeout_cfg) as client:
                 async with client.stream("POST", f"{self.base_url}/api/chat", json=payload) as response:
                     if response.status_code != 200:
                         err_text = await response.aread()
@@ -104,10 +107,10 @@ class OllamaProvider(BaseLLMProvider):
         return chunks
 
     def _synthesize_offline_context(self, prompt: str) -> str:
-        question_match = re.search(r"User Question:\s*(.*)", prompt, re.DOTALL)
+        question_match = re.search(r"User (?:Question|Prompt):\s*(.*?)(?=\n\nCompose|\Z)", prompt, re.DOTALL)
         question = question_match.group(1).strip() if question_match else "your question"
 
-        pattern = r"---\s*Episode:\s*(.*?)\s*---\n([\s\S]*?)(?=(?:---\s*Episode:|$|User Question:))"
+        pattern = r"---\s*(?:SOURCE CHUNK:\s*)?Episode:?\s*['\"]?(.*?)['\"]?\s*---\n([\s\S]*?)(?=(?:---\s*(?:SOURCE CHUNK:\s*)?Episode:|$|User (?:Question|Prompt):))"
         matches = re.findall(pattern, prompt)
 
         if not matches:

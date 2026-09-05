@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     # Ollama Local Settings
     OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
     OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "llama3.2:3b")
-    OLLAMA_TIMEOUT_SECONDS: float = 60.0
+    OLLAMA_TIMEOUT_SECONDS: float = 300.0
 
     # Anthropic Cloud Settings
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
@@ -37,7 +37,7 @@ class Settings(BaseSettings):
 
     # RAG Settings
     SIMILARITY_THRESHOLD: float = 0.14
-    TOP_K_RETRIEVAL: int = 5
+    TOP_K_RETRIEVAL: int = 3
 
 @lru_cache()
 def get_settings() -> Settings:
