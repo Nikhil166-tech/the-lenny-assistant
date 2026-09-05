@@ -13,7 +13,7 @@ from app.rag.retriever import TranscriptRetriever
 from app.providers.ollama_provider import OllamaProvider
 from app.providers.cloud_provider import ClaudeProvider, OpenAIProvider, resolve_cloud_provider
 from app.skills.ship30_writer import SHIP_30_SYSTEM_PROMPT, build_ship30_prompt
-from app.skills.artifact_generator import ARTIFACT_SYSTEM_INSTRUCTIONS, extract_artifact
+from app.skills.artifact_generator import ARTIFACT_SYSTEM_INSTRUCTIONS, extract_artifact, build_calculator_artifact
 from app.config import get_settings
 
 logger = logging.getLogger("lenny_assistant.chat")
@@ -143,6 +143,13 @@ async def stream_chat(
 
             # Extract any generated artifact
             cleaned_text, artifact_data = extract_artifact(accumulated_text)
+
+            is_calculator_query = any(k in req.message.lower() for k in ["calculator", "roi", "slider", "cac", "ltv", "interactive plg", "roi simulator"])
+            if not artifact_data and is_calculator_query:
+                artifact_data = build_calculator_artifact("PLG vs SLG ROI Calculator")
+                artifact_notice = "\n\n*(Created Artifact: **PLG vs SLG ROI Calculator** — viewable in the Artifact Canvas)*\n"
+                yield f'data: {json.dumps({"type": "token", "content": artifact_notice})}\n\n'
+                accumulated_text += artifact_notice
 
             if artifact_data:
                 yield f'data: {json.dumps({"type": "artifact", "artifact": artifact_data})}\n\n'

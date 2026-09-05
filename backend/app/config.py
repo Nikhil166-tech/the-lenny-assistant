@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
     # RAG Settings
-    SIMILARITY_THRESHOLD: float = 0.20
+    SIMILARITY_THRESHOLD: float = 0.14
     TOP_K_RETRIEVAL: int = 5
 
 @lru_cache()
