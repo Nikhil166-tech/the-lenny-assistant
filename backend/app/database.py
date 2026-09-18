@@ -18,22 +18,28 @@ async def init_db():
     primary_url = settings.DATABASE_URL
     fallback_url = settings.FALLBACK_DATABASE_URL
 
-    # Attempt connecting to primary PostgreSQL
-    try:
-        test_engine = create_async_engine(
-            primary_url,
-            echo=False,
-            pool_pre_ping=True,
-            connect_args={"timeout": 2.0} if "asyncpg" in primary_url else {}
-        )
-        async with test_engine.begin() as conn:
-            await conn.execute(text("SELECT 1"))
-        engine = test_engine
-        logger.info(f"Connected successfully to PostgreSQL database: {primary_url.split('@')[-1]}")
-    except Exception as e:
-        logger.warning(f"Failed connecting to primary database ({e}). Falling back to SQLite: {fallback_url}")
+    # Attempt connecting to primary PostgreSQL if DATABASE_URL is configured
+    if primary_url and "postgres" in primary_url:
+        try:
+            test_engine = create_async_engine(
+                primary_url,
+                echo=False,
+                pool_pre_ping=True,
+                connect_args={"timeout": 2.0} if "asyncpg" in primary_url else {}
+            )
+            async with test_engine.begin() as conn:
+                await conn.execute(text("SELECT 1"))
+            engine = test_engine
+            using_fallback = False
+            logger.info(f"Connected successfully to PostgreSQL database: {primary_url.split('@')[-1]}")
+        except Exception as e:
+            logger.warning(f"Failed connecting to primary database ({e}). Falling back to SQLite: {fallback_url}")
+            using_fallback = True
+            engine = create_async_engine(fallback_url, echo=False)
+    else:
         using_fallback = True
         engine = create_async_engine(fallback_url, echo=False)
+        logger.info(f"Using embedded SQLite database: {fallback_url}")
 
     async_session_factory = async_sessionmaker(
         bind=engine,

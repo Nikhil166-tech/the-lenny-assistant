@@ -13,10 +13,7 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
 
     # Database
-    DATABASE_URL: str = os.getenv(
-        "DATABASE_URL",
-        "postgresql+asyncpg://postgres:password123@localhost:5432/lenny_assistant"
-    )
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "")
     FALLBACK_DATABASE_URL: str = "sqlite+aiosqlite:///./lenny_assistant.db"
 
     # LLM Settings

@@ -23,7 +23,7 @@ class OllamaProvider(BaseLLMProvider):
 
     async def check_health(self) -> Dict[str, Any]:
         try:
-            async with httpx.AsyncClient(timeout=3.0) as client:
+            async with httpx.AsyncClient(timeout=1.0) as client:
                 resp = await client.get(f"{self.base_url}/api/tags")
                 if resp.status_code == 200:
                     models = [m.get("name") for m in resp.json().get("models", [])]
