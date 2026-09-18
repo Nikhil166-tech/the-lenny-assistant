@@ -2,7 +2,9 @@ import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.database import init_db
+from sqlalchemy import select, func
+from app.database import init_db, get_session_factory
+from app.models.db_models import TranscriptChunk
 from app.api import sessions, chat, health
 
 # Configure structured logging
@@ -16,6 +18,26 @@ logger = logging.getLogger("lenny_assistant")
 async def lifespan(app: FastAPI):
     logger.info("Starting The Lenny Growth Assistant API...")
     await init_db()
+
+    # Automatically check and seed transcripts on clean cloud deployments
+    try:
+        session_factory = get_session_factory()
+        if session_factory:
+            async with session_factory() as session:
+                res = await session.execute(select(func.count(TranscriptChunk.id)))
+                count = res.scalar() or 0
+                if count == 0:
+                    logger.info("No transcript chunks found in database. Running auto-seeding ingestion...")
+                    try:
+                        from scripts.ingest import run_ingestion
+                        await run_ingestion()
+                    except Exception as ie:
+                        logger.warning(f"Auto-ingestion encountered an error: {ie}")
+                else:
+                    logger.info(f"Verified {count} transcript chunks loaded in database.")
+    except Exception as e:
+        logger.warning(f"Transcript verification check skipped: {e}")
+
     yield
     logger.info("Shutting down The Lenny Growth Assistant API...")
 

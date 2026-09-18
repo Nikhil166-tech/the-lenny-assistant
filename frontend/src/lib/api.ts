@@ -1,6 +1,7 @@
 import { HealthStatus, Session, Message } from '../types';
 
-const API_BASE = '/api';
+const RAW_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+export const API_BASE = RAW_BASE ? `${RAW_BASE}/api` : '/api';
 
 export async function fetchHealth(): Promise<HealthStatus> {
   const res = await fetch(`${API_BASE}/health`);

@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Message, CitationSource, Artifact } from '../types';
+import { API_BASE } from '../lib/api';
 
 interface SendMessageOptions {
   sessionId: string;
@@ -45,7 +46,7 @@ export function useChatStream() {
       setCurrentStatus('Connecting to Lenny archive...');
 
       try {
-        const response = await fetch('/api/chat', {
+        const response = await fetch(`${API_BASE}/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
