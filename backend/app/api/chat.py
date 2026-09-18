@@ -80,7 +80,8 @@ async def stream_chat(
         accumulated_text = ""
         try:
             # Yield retrieval status
-            yield f'data: {json.dumps({"type": "status", "content": "Searching Lenny\'s Podcast transcript archive..."})}\n\n'
+            status_init = json.dumps({"type": "status", "content": "Searching Lenny's Podcast transcript archive..."})
+            yield f"data: {status_init}\n\n"
 
             if not retrieved_chunks:
                 # Out of scope rejection
